@@ -91,14 +91,64 @@ app.post("/ask", async (req, res) => {
   res.render("index", { wT: text, EnglishTranslation: trans });
 });
 
-app.get("/login", (req, res) => {
-  res.render("login");
+let aUsers = [];
+
+app.get("/login", async (req, res) => {
+  await knex
+    .select()
+    .from("users")
+    .then((result) => {
+      aUsers = [];
+      for (let i = 0; i < result.length; i++) {
+        aUsers.push({
+          id: result[i].user_id,
+          name: result[i].user_name,
+          email: result[i].user_email,
+          pass: result[i].user_password,
+        });
+      }
+    });
+
+  res.render("login", { user: res.locals.user });
 });
 
-app.post("/login", (req, res) => {});
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  console.log(username, password);
+
+  // Simulate user data (replace this with your actual user authentication logic)
+  const user = aUsers.find((u) => u.name == username && u.pass == password);
+
+  if (user) {
+    // Set user data in the session
+    req.session.user = user;
+    res.redirect("/");
+  } else {
+    // Handle authentication failure
+
+    res.redirect("/login?error=Authentication Failed");
+  }
+});
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  res.render("register", { user: res.locals.user });
+});
+
+app.post("/register", (req, res) => {
+  let username = req.body.username.toLowerCase();
+  let email = req.body.email.toLowerCase();
+  let password = req.body.password;
+
+  knex("users")
+    .insert({
+      user_name: username,
+      user_email: email,
+      user_password: password,
+    })
+    .then((results) => {
+      res.redirect("/login");
+    });
 });
 
 app.get("/pastconversations", (req, res) => {

@@ -71,9 +71,9 @@
       <a href="/">Home</a>
     </nav>
     <h2>Welcome to Local Speak</h2>
-    <form>
-      <input type="text" placeholder="Username" required />
-      <input type="password" placeholder="Password" required />
+    <form method="post" action="/login">
+      <input type="text" name="username" placeholder="Username" required />
+      <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
   </body>
