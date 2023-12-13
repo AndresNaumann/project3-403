@@ -3,7 +3,7 @@
 
 // import stuff
 const express = require("express");
-let app = express();
+const app = express();
 // Pull the port from an environment variable (RDS)
 const PORT = process.env.PORT || 5500;
 // Because the app uses EJS, apply middleware some middleware
