@@ -5,13 +5,20 @@
 const express = require("express");
 const session = require("express-session");
 let path = require("path");
+const fs = require("fs");
 const app = express();
 
-// Middleware
+const readlineSync = require("readline-sync");
+const colors = require("colors");
+const speechFile = path.resolve("audio.mp3");
+
+// EJS setup
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("assets"));
+
+// Session middleware
 
 app.use(
   session({
@@ -20,6 +27,8 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+// Create middleware to authenticate the user
 
 const authenticateUser = (req, res, next) => {
   if (req.session && req.session.user) {
@@ -34,19 +43,14 @@ const authenticateUser = (req, res, next) => {
 
 app.use(authenticateUser);
 
-// OpenAI stuff
+// OpenAI and other imports
 
 const OpenAI = require("openai");
 let dotenv = require("dotenv");
-const fs = require("fs");
 const res = require("express/lib/response");
 dotenv.config();
 
-// Conversation and Voice
-
-const readlineSync = require("readline-sync");
-const colors = require("colors");
-const speechFile = path.resolve(`./${Date()}.mp3`);
+// Connect to a postgres database
 
 const knex = require("knex")({
   client: "pg",
@@ -59,47 +63,90 @@ const knex = require("knex")({
   },
 });
 
+// Use API key stored in the environment variables
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-welcome = "Say, 'Ask me something in Any Language'";
+welcome = [
+  { role: "user", content: "Say, 'Ask me something in any language.'" },
+];
+let chatHistory = [];
+
+// Function to get ChatGPT to say something
 
 async function main(input) {
   const chatCompletion = await openai.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a helpful assistant. your response should be in the same language as the content of the user input and should be less than 30 words",
-      },
-      {
-        role: "user",
-        content: input,
-      },
-    ],
     model: "gpt-3.5-turbo",
+    messages: input,
   });
 
   return chatCompletion.choices[0].message.content;
 }
 
-let text = main("Say 'This worked'.");
-
-// Server side
+console.log(main([{ role: "user", content: "say, 'this worked'" }]));
 
 app.get("/", async (req, res) => {
   let welcomeText = await main(welcome);
   res.render("index", { wT: welcomeText, EnglishTranslation: " " });
 });
 
+//
+
 app.post("/ask", async (req, res) => {
-  let text = await main(req.body.input);
+  // Push what the user said to the 'messages' array fed into the chathistory
+
+  // Construct messages by iterating over the History
+  const messages = chatHistory.map(([role, content]) => ({
+    role,
+    content,
+  }));
+
+  messages.push({ role: "user", content: req.body.input });
+  messages.push({
+    role: "system",
+    content: "please keep the response to 30 words maximum.",
+  });
+
+  // Generate a response
+
+  try {
+  } catch {}
+
+  const completionText = await main(messages);
+
+  chatHistory.push(["user", req.body.input]);
+  chatHistory.push(["assistant", completionText]);
+
+  // Render the page
+
+  res.render("index", {
+    wT: completionText,
+    EnglishTranslation: "translation not available yet",
+  });
+
+  // Generate a voice recording
+
+  const mp3 = await openai.audio.speech.create({
+    model: "tts-1",
+    voice: "onyx",
+    input: completionText,
+  });
+
+  const buffer = Buffer.from(await mp3.arrayBuffer());
+  await fs.promises.writeFile(speechFile, buffer);
+
   let translate =
-    "Output just the english translation of " + text + " and nothing else.";
-  let trans = await main(translate);
-  res.render("index", { wT: text, EnglishTranslation: trans });
+    "Output just the english translation of " +
+    completionText +
+    " and nothing else.";
+
+  // let trans = await main(translate);
+  // add translation: trans when it works
 });
+
+// Account Management Routes
 
 let aUsers = [];
 
@@ -176,4 +223,12 @@ let genText = "";
 //   res.send({ genText });
 // });
 
-app.listen(5500);
+app.get("/edit", (req, res) => {
+  res.render("editaccount");
+});
+
+app.listen(5500, () =>
+  console.log(
+    "The server is listening. Go to Localhost:5500 to check out the website!"
+  )
+);
