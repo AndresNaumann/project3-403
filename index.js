@@ -67,7 +67,17 @@ welcome = "Say, 'Ask me something in Any Language'";
 
 async function main(input) {
   const chatCompletion = await openai.chat.completions.create({
-    messages: [{ role: "user", content: input }],
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a helpful assistant. your response should be in the same language as the content of the user input and should be less than 30 words",
+      },
+      {
+        role: "user",
+        content: input,
+      },
+    ],
     model: "gpt-3.5-turbo",
   });
 
