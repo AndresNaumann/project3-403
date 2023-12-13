@@ -4,20 +4,31 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Account</title>
+
     <link
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/styles.css" />
-
-    <title>Home</title>
     <style>
-      /* Add custom CSS */
+      body {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 70vh;
+      }
+      .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 30rem;
+        margin: 50px auto;
+        padding: 20px;
+      }
     </style>
   </head>
   <body>
-    <!--Navbar Start-->
-
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
       <a class="navbar-brand" href="/">LangLearn</a>
       <button
@@ -63,69 +74,47 @@
       </div>
     </nav>
 
-    <!--Navbar End-->
-
-    <!--Chat Start-->
-
-    <div class="form-container">
-      <select>
-        <option>English</option>
-        <option>Spanish</option>
-        <option>French</option>
-        <option>Finnish</option>
-      </select>
-      <div class="header-container">
-        <h3 id="dynamicHeader"></h3>
-      </div>
-      <form method="post" action="/ask">
-        <textarea
-          name="input"
-          id="input"
-          placeholder="Type your text here"
-        ></textarea>
-        <br />
-        <button type="submit" class="btn btn-primary">Submit</button>
+    <div class="card">
+      <h2>Edit Account</h2>
+      <form method="post" action="/edit">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            STYLE="text-transform:lowercase"
+            type="text"
+            class="form-control"
+            name="username"
+            placeholder="Enter a New Username"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            STYLE="text-transform:lowercase"
+            type="text"
+            class="form-control"
+            name="email"
+            placeholder="example@gmail.com"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            placeholder="Enter a Password"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
       </form>
-      <br />
-      <p id="fadeTranslation"></p>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <!--Fade in a nd out scripts-->
-
-    <script>
-      const dynamicHeader = document.getElementById("dynamicHeader");
-      const fadeTranslation = document.getElementById("fadeTranslation");
-
-      // Text for the H3 tag
-      const wtText = `<%= wT %>`;
-      const englishTranslation = "<%= EnglishTranslation %>";
-
-      // Function to type out the text
-      function typeText(text, element, speed = 50) {
-        let i = 0;
-        const typingEffect = setInterval(function () {
-          if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-          } else {
-            clearInterval(typingEffect);
-            // Change the color to grey and set the translation text
-            fadeTranslation.style.color = "#555"; // Set to grey
-            fadeTranslation.innerHTML = englishTranslation;
-          }
-        }, speed);
-      }
-
-      // Start typing out the text when the page loads
-      window.onload = function () {
-        typeText(wtText, dynamicHeader);
-      };
-
-      document.getElementById("input").focus();
-    </script>
   </body>
 </html>
