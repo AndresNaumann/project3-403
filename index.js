@@ -155,6 +155,10 @@ app.get("/pastconversations", (req, res) => {
   res.render("pastqueries");
 });
 
+app.get("/test", (req, res) => {
+  res.render("test");
+});
+
 let genText = "";
 
 // app.get("/ask", async (req, res) => {
