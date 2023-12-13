@@ -5,10 +5,7 @@
 const express = require("express");
 const app = express();
 // Pull the port from an environment variable (RDS)
-const PORT = process.env.PORT || 5500;
-// Because the app uses EJS, apply middleware some middleware
-app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
+const PORT = process.env.PORT || 5500; 
 
 
 const session = require("express-session");
