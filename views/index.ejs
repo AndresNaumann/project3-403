@@ -110,7 +110,7 @@
                     class="form-control border-0 border-bottom"
                     name="input"
                     id="input"
-                    placeholder="Type your text here"
+                    placeholder="Ask something in a foreign language"
                     style="width: 300px"
                   />
                 </div>
@@ -125,6 +125,7 @@
 
         <div class="col-6">
           <div class="header-container">
+            <img id="face" src="smile.png" style="width: 30px; height: 30px" />
             <h3 class="text-center" id="dynamicHeader"></h3>
           </div>
 
@@ -151,6 +152,7 @@
 
       // Function to type out the text
       function typeText(text, element, speed = 50) {
+        document.getElementById("face").src = "think.png";
         let i = 0;
         const typingEffect = setInterval(function () {
           if (i < text.length) {
@@ -161,6 +163,7 @@
             // Change the color to grey and set the translation text
             fadeTranslation.style.color = "#555"; // Set to grey
             fadeTranslation.innerHTML = englishTranslation;
+            document.getElementById("face").src = "smile.png";
           }
         }, speed);
       }

@@ -114,7 +114,7 @@ app.post("/ask", async (req, res) => {
   messages.push({
     role: "system",
     content:
-      "please keep the response to 30 words maximum and respond in Spanish please!!",
+      "please keep the response to 30 words maximum and only respond in a language other than english. Keep the topic of conversation on learning languages and shut down anything that has to do with anything else unless its in a foreign language.",
   });
 
   // Generate a response
@@ -303,6 +303,15 @@ app.post("/edit/:userid", async (req, res) => {
     console.error("Error updating user:", error);
     res.status(500).send("Internal Server Error");
   }
+});
+
+app.get("/delete/:conversationid", (req, res) => {
+  knex("conversations")
+    .where("conversation_id", req.params.conversationid)
+    .del()
+    .then((result) => {
+      res.redirect("/pastconversations");
+    });
 });
 
 app.listen(5500, () =>

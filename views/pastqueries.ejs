@@ -108,6 +108,12 @@
       <% for (let i = 0; i < conversations.length; i++) { %>
       <p>You: <%= conversations[i].query %></p>
       <p>Bot: <%= conversations[i].response %></p>
+      <small
+        ><a href="/delete/<%= conversations[i].conversation_id%>"
+          >Delete</a
+        ></small
+      >
+      <br />
       <% } %>
     </div>
 
