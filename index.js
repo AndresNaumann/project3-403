@@ -314,7 +314,7 @@ app.get("/delete/:conversationid", (req, res) => {
     });
 });
 
-app.listen(5500, () =>
+app.listen(PORT, () =>
   console.log(
     "The server is listening. Go to Localhost:5500 to check out the website!"
   )
