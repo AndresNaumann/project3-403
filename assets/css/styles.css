@@ -24,9 +24,12 @@ body {
 .card {
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  width: 40rem;
+  max-width: 40rem;
   margin: 50px auto;
+  margin-top: 20px;
   padding: 20px;
+  transition: height 0.3s ease-out;
 }
 
 .btn-primary {
@@ -39,7 +42,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 50vh;
+  height: 70vh;
 }
 
 .form-container {
