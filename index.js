@@ -5,13 +5,11 @@
 const express = require("express");
 const app = express();
 // // Pull the port from an environment variable (RDS)
-const PORT = process.env.PORT || 5500; 
-
+const PORT = process.env.PORT || 5500;
 
 const session = require("express-session");
 let path = require("path");
 const fs = require("fs");
-
 
 const readlineSync = require("readline-sync");
 const colors = require("colors");
@@ -94,7 +92,11 @@ console.log(main([{ role: "user", content: "say, 'this worked'" }]));
 
 app.get("/", async (req, res) => {
   let welcomeText = await main(welcome);
-  res.render("index", { wT: welcomeText, EnglishTranslation: " " });
+  res.render("index", {
+    wT: welcomeText,
+    EnglishTranslation: " ",
+    user: res.locals.user,
+  });
 });
 
 //
@@ -111,24 +113,42 @@ app.post("/ask", async (req, res) => {
   messages.push({ role: "user", content: req.body.input });
   messages.push({
     role: "system",
-    content: "please keep the response to 30 words maximum.",
+    content:
+      "please keep the response to 30 words maximum and only respond in a language other than english. Keep the topic of conversation on learning languages and shut down anything that has to do with anything else unless its in a foreign language.",
   });
 
   // Generate a response
-
-  try {
-  } catch {}
 
   const completionText = await main(messages);
 
   chatHistory.push(["user", req.body.input]);
   chatHistory.push(["assistant", completionText]);
 
+  let translate =
+    "Output just the english translation of " +
+    completionText +
+    " and nothing else.";
+
+  let trans = await main([{ role: "user", content: translate }]);
+
+  // insert responses into postgres
+
+  let conversations = [];
+
+  if (res.locals.user) {
+    conversations = await knex("conversations").insert({
+      user_id: res.locals.user.id,
+      query: req.body.input,
+      response: completionText,
+    });
+  }
+
   // Render the page
 
   res.render("index", {
     wT: completionText,
-    EnglishTranslation: "translation not available yet",
+    EnglishTranslation: trans,
+    conversations: conversations,
   });
 
   // Generate a voice recording
@@ -141,11 +161,6 @@ app.post("/ask", async (req, res) => {
 
   const buffer = Buffer.from(await mp3.arrayBuffer());
   await fs.promises.writeFile(speechFile, buffer);
-
-  let translate =
-    "Output just the english translation of " +
-    completionText +
-    " and nothing else.";
 
   // let trans = await main(translate);
   // add translation: trans when it works
@@ -213,12 +228,27 @@ app.post("/register", (req, res) => {
     });
 });
 
+app.get("/logout", (req, res) => {
+  req.session.user = undefined;
+  res.redirect("login");
+});
+
 app.get("/pastconversations", (req, res) => {
-  res.render("pastqueries");
+  let userID = res.locals.user.id;
+  knex
+    .select()
+    .from("conversations")
+    .where("user_id", userID)
+    .then((result) => {
+      res.render("pastqueries", {
+        conversations: result,
+        user: res.locals.user,
+      });
+    });
 });
 
 app.get("/test", (req, res) => {
-  res.render("test");
+  res.render("test", { user: res.locals.user });
 });
 
 let genText = "";
@@ -228,11 +258,63 @@ let genText = "";
 //   res.send({ genText });
 // });
 
-app.get("/edit", (req, res) => {
-  res.render("editaccount");
+app.get("/edit/:userid", (req, res) => {
+  editedID = req.params.userid;
+
+  knex
+    .select()
+    .from("users")
+    .where("user_id", editedID)
+    .then((result) => {
+      res.render("editaccount", { user: result, admin: res.locals.user });
+    });
 });
 
-app.listen(5500, () =>
+app.post("/edit/:userid", async (req, res) => {
+  let editedID = req.params.userid;
+
+  let newUsername = req.body.username.toLowerCase();
+  let newEmail = req.body.email.toLowerCase();
+  let newPassword = req.body.password;
+
+  try {
+    // Update the user information
+    await knex("users").where("user_id", editedID).update({
+      user_name: newUsername,
+      user_email: newEmail,
+      user_password: newPassword,
+    });
+
+    // Fetch the updated user data after the update
+    // const updatedUser = await knex("users").where("user_id", editedID).first();
+
+    if (editedID == res.locals.user.id) {
+      // If the edited user is the logged-in user, update the session
+      req.session.user.name = newUsername;
+    }
+
+    // Some validation scripts to see who is the session user after someone edits their account.
+
+    console.log("logged on as " + req.session.user.id);
+
+    // Redirect only after the session is updated
+    res.redirect("/");
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.get("/delete/:conversationid", (req, res) => {
+  knex("conversations")
+    .where("conversation_id", req.params.conversationid)
+    .del()
+    .then((result) => {
+      res.redirect("/pastconversations");
+    });
+});
+
+app.listen(PORT, () =>
   console.log(
     "The server is listening. Go to Localhost:5500 to check out the website!"
   )
