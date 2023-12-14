@@ -15,10 +15,14 @@
       .body {
         align-items: center;
         justify-content: center;
-        height: 120vh;
       }
-      .talks {
+
+      .card {
         font-size: 20;
+        height: 50vh;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0);
+        border: none;
+        margin-bottom: 20px;
       }
     </style>
   </head>
@@ -98,7 +102,9 @@
 
     <!--Navbar End-->
 
-    <div class="talks">
+    <div class="card">
+      <h2>Chat History</h2>
+      <br />
       <% for (let i = 0; i < conversations.length; i++) { %>
       <p>You: <%= conversations[i].query %></p>
       <p>Bot: <%= conversations[i].response %></p>

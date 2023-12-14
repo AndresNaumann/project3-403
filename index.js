@@ -5,13 +5,11 @@
 const express = require("express");
 const app = express();
 // // Pull the port from an environment variable (RDS)
-const PORT = process.env.PORT || 5500; 
-
+const PORT = process.env.PORT || 5500;
 
 const session = require("express-session");
 let path = require("path");
 const fs = require("fs");
-
 
 const readlineSync = require("readline-sync");
 const colors = require("colors");
@@ -115,7 +113,8 @@ app.post("/ask", async (req, res) => {
   messages.push({ role: "user", content: req.body.input });
   messages.push({
     role: "system",
-    content: "please keep the response to 30 words maximum.",
+    content:
+      "please keep the response to 30 words maximum and respond in Spanish please!!",
   });
 
   // Generate a response
@@ -227,6 +226,11 @@ app.post("/register", (req, res) => {
     .then((results) => {
       res.redirect("/login");
     });
+});
+
+app.get("/logout", (req, res) => {
+  req.session.user = undefined;
+  res.redirect("login");
 });
 
 app.get("/pastconversations", (req, res) => {

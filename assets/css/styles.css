@@ -27,9 +27,7 @@ body {
   width: 40rem;
   max-width: 40rem;
   margin: 50px auto;
-  margin-top: 20px;
   padding: 20px;
-  transition: height 0.3s ease-out;
 }
 
 .btn-primary {
